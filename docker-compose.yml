@@ -1,0 +1,34 @@
+version: '3'
+services:
+
+  db:
+    image: postgres:12-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=codimd
+      - POSTGRES_PASSWORD=hackmdpass
+      - POSTGRES_DB=codimd
+    networks:
+      - back
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+
+  app:
+    image: nabo.codimd.dev/hackmdio/hackmd:2.1.0
+    restart: always
+    depends_on:
+      - db
+    environment:
+      - CMD_DB_URL=postgres://codimd:hackmdpass@db:5432/codimd
+    networks:
+      - front
+      - back
+    ports:
+      - "127.0.0.1:3000:3000"
+
+networks:
+  front:
+  back:
+    internal: true
